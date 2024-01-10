@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Check if at least one argument is provided
+if [ $# -lt 1 ]; then
+    echo "Usage: $0 <script.py> [args...]"
+    exit 1
+fi
+
+# Extract the script name and remove its extension
+SCRIPT_NAME=$1
+MODULE_NAME=$(basename "$SCRIPT_NAME" .py)
+shift
+
+# Set the script name as an environment variable
+export SCRIPT_NAME="$SCRIPT_NAME"
+
+# Compile the script with Cython
+python $PYTHONC_ROOT/setup.py build_ext --inplace --force
+
+# Run the compiled module as a Python module with the remaining arguments
+echo python -c '"import sys; import $MODULE_NAME; $MODULE_NAME.main(*sys.argv[1:]);sys.exit()" "$@"'
+python -c "import sys;import $MODULE_NAME;$MODULE_NAME.main(*sys.argv[1:]);sys.exit()" "$@"
